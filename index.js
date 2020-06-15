@@ -3,6 +3,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const colors = require("colors");
+// hiding my super secret password (which is password123), from evil TAs with a .gitignore
 const hiddenPassword = require("./password.js")
 
 // MySQL connection setup ///////////////////////
@@ -11,7 +12,7 @@ const connection = mysql.createConnection({
   port: 3306,
   user: "root",
   password: hiddenPassword,
-  database: "employee_tracker_db"
+  database: "employee_cms_db"
 });
 
 // connect to the mysql server and sql database

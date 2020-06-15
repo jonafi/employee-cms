@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/jonafi/employee-cms/issues"
   },
-  "homepage": "https://github.com/jonafi/employee-cms#readme"
+  "homepage": "https://github.com/jonafi/employee-cms#readme",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "inquirer": "^7.2.0",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {}
 }
