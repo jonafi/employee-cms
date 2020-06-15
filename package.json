@@ -1,0 +1,19 @@
+{
+  "name": "employee-cms",
+  "version": "1.0.0",
+  "description": "MySQL-based employee cms",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonafi/employee-cms.git"
+  },
+  "author": "John Ferro",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jonafi/employee-cms/issues"
+  },
+  "homepage": "https://github.com/jonafi/employee-cms#readme"
+}
