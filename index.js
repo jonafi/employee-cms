@@ -18,44 +18,74 @@ const connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
-  start();
+ // displayAll();
+ selectAction();
 });
 
 
-//show the starter db
-function start() {
+// displayALL
+function displayAll() {
 
-  connection.query("SELECT * FROM employee", function (err,data) {
-      if (err) throw err;
-      console.log(data);
-    }
+  connection.query("SELECT * FROM department", function (err, data) {
+    if (err) throw err;
+    console.log(data);
+    console.log("====================================================".zebra);
+  }
+  );
+  connection.query("SELECT * FROM role", function (err, data) {
+    if (err) throw err;
+    console.log(data);
+    console.log("====================================================".rainbow)
+  }
+  );
+  connection.query("SELECT * FROM employee", function (err, data) {
+    if (err) throw err;
+    console.log(data);
+  }
   );
 
 }
 
 
 
-// function which prompts the user for what action they should take
-// function start() {
-//   inquirer
-//     .prompt({
-//       name: "postOrBid",
-//       type: "list",
-//       message: "Would you like to [POST] an auction or [BID] on an auction?",
-//       choices: ["POST", "BID", "EXIT"]
-//     })
-//     .then(function(answer) {
-//       // based on their answer, either call the bid or the post functions
-//       if (answer.postOrBid === "POST") {
-//         postAuction();
-//       }
-//       else if(answer.postOrBid === "BID") {
-//         bidAuction();
-//       } else{
-//         connection.end();
-//       }
-//     });
-// }
+function selectAction() {
+  inquirer
+    .prompt({
+      name: "actionSelection",
+      type: "list",
+      message: "Please select an action",
+      choices: ["Add a department", "Add a role", "Exit".yellow]
+    })
+    .then(function (answer) {
+      if (answer.actionSelection === "Add a department") {
+        addDepartment();
+      }
+      else if (answer.actionSelection === "Add a role") {
+        addRole();
+      } else {
+        exitCheck();
+      }
+    });
+}
+
+function exitCheck(){
+  inquirer
+  .prompt({
+    name: "exitConfirm",
+    type: "confirm",
+    message: "Are you sure you want to exit?",
+  })
+  .then(function (answer) {
+    if(answer.exitConfirm==true){
+     connection.end();
+    }
+    else{
+      selectAction();
+    }
+  });
+}
+
+
 
 // // function to handle posting new items up for auction
 // function postAuction() {
