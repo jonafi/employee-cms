@@ -15,12 +15,10 @@ VALUES
     (4, 'Finance'),
     (5, 'Engineering');
 
-
-
 CREATE TABLE role(
   id INTEGER PRIMARY KEY,
   title VARCHAR(30),
-  salary DECIMAL(10,2),
+  salary DECIMAL(10),
   department_id INTEGER
 );
 
@@ -37,7 +35,6 @@ VALUES
     (9, 'Director', 66000, 1),
     (10, 'Associate', 48000, 4);
 
-
 CREATE TABLE employee(
   id INTEGER PRIMARY KEY,
   first_name VARCHAR(30),
@@ -53,4 +50,6 @@ VALUES
     (103, 'Peter', 'Mando', 3, null),
     (104, 'Steven', 'Spielberg', 5, null);
     
-    
+SELECT * FROM department;
+SELECT * FROM role;
+SELECT * FROM employee;

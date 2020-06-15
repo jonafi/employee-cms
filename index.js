@@ -18,32 +18,45 @@ const connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
-  // displayAll();
+  //displayAll();
   selectAction();
 });
 
 
-// displayALL
-function displayAll() {
-
+function displayDepartments(){
   connection.query("SELECT * FROM department", function (err, data) {
     if (err) throw err;
+    console.log("===================DEPARTMENTS========================".america);
     console.log(data);
-    console.log("====================================================".zebra);
+    console.log("====================================================".america);
   }
   );
+}
+
+function displayRoles(){
   connection.query("SELECT * FROM role", function (err, data) {
     if (err) throw err;
+    console.log("====================ROLES============================".zebra)
+    console.log(data);
+    console.log("====================================================".zebra)
+  }
+  );
+}
+
+function displayEmployees(){
+  connection.query("SELECT * FROM employee", function (err, data) {
+    if (err) throw err;
+    console.log("====================EMPLOYEES===========================".rainbow)
     console.log(data);
     console.log("====================================================".rainbow)
   }
   );
-  connection.query("SELECT * FROM employee", function (err, data) {
-    if (err) throw err;
-    console.log(data);
-  }
-  );
+}
 
+function displayAll() {
+  displayDepartments();
+  displayRoles();
+  displayEmployees();
 }
 
 function selectAction() {
@@ -66,7 +79,6 @@ function selectAction() {
     });
 }
 
-
 function addDepartment() {
   connection.query(
     "INSERT INTO department SET ?",
@@ -77,6 +89,23 @@ function addDepartment() {
     function (err) {
       if (err) throw err;
       console.log("Department Added!");
+      selectAction();
+    }
+  );
+}
+
+function addRole() {
+  connection.query(
+    "INSERT INTO role SET ?",
+    {
+      id: 11,
+      title: "Partner",
+      salary: 100000,
+      department_id: 4
+    },
+    function (err) {
+      if (err) throw err;
+      console.log("Role Added!");
       selectAction();
     }
   );
