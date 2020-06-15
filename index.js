@@ -18,8 +18,8 @@ const connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
- // displayAll();
- selectAction();
+  // displayAll();
+  selectAction();
 });
 
 
@@ -46,15 +46,13 @@ function displayAll() {
 
 }
 
-
-
 function selectAction() {
   inquirer
     .prompt({
       name: "actionSelection",
       type: "list",
       message: "Please select an action",
-      choices: ["Add a department", "Add a role", "Exit".yellow]
+      choices: ["Add a department", "Add a role", "Exit"]
     })
     .then(function (answer) {
       if (answer.actionSelection === "Add a department") {
@@ -68,24 +66,38 @@ function selectAction() {
     });
 }
 
-function exitCheck(){
-  inquirer
-  .prompt({
-    name: "exitConfirm",
-    type: "confirm",
-    message: "Are you sure you want to exit?",
-  })
-  .then(function (answer) {
-    if(answer.exitConfirm==true){
-     connection.end();
-    }
-    else{
+
+function addDepartment() {
+  connection.query(
+    "INSERT INTO department SET ?",
+    {
+      id: 6,
+      name: "Human Resources"
+    },
+    function (err) {
+      if (err) throw err;
+      console.log("Department Added!");
       selectAction();
     }
-  });
+  );
 }
 
-
+function exitCheck() {
+  inquirer
+    .prompt({
+      name: "exitConfirm",
+      type: "confirm",
+      message: "Are you sure you want to exit?".yellow,
+    })
+    .then(function (answer) {
+      if (answer.exitConfirm == true) {
+        connection.end();
+      }
+      else {
+        selectAction();
+      }
+    });
+}
 
 // // function to handle posting new items up for auction
 // function postAuction() {
