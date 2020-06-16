@@ -76,7 +76,7 @@ function selectAction() {
           addEmployee(); // static, change to prompt
           break;
         case "Remove Employee":
-          console.log("remove emp function"); // DEL WHERE 
+          removeEmployee(); // current
           break;
         case "Update Employee Role":
           console.log("update emp role function"); //UPDATE WHERE
@@ -123,7 +123,8 @@ function displayRoles() {
 function displayEmployees() {
   connection.query("SELECT * FROM employee", function (err, data) {
     if (err) throw err;
-    console.table(" EMPLOYEES ".white.bgBlue, data);
+
+    console.table("\n EMPLOYEES ".white.bgBlue, data);
     selectAction();
 
   }
@@ -141,33 +142,71 @@ function addEmployee() {
   inquirer
     .prompt([
       {
-      name: "employeeFirstName",
-      type: "input",
-      message: "Enter Employee First Name",
-    },
-    {
-      name: "employeeLastName",
-      type: "input",
-      message: "Enter Employee Last Name",
-    }
-  ])
+        name: "employeeFirstName",
+        type: "input",
+        message: "Enter Employee First Name",
+      },
+      {
+        name: "employeeLastName",
+        type: "input",
+        message: "Enter Employee Last Name",
+      }
+    ])
     .then(function (answer) {
       connection.query(
         "INSERT INTO employee SET ?",
         {
-          id: 105,
           first_name: answer.employeeFirstName,
           last_name: answer.employeeLastName,
-          role_id:5,
-          manager_id:null
+          role_id: 5,
+          manager_id: null
         },
         function (err) {
           if (err) throw err;
-          console.log("Employee Added!".green);
+          console.log("\n\tEmployee Added!\n".green);
           selectAction();
         }
       );
     });
+}
+
+function removeEmployee() {
+  connection.query("SELECT * FROM employee", function (err, data) {
+    if (err) throw err;
+    inquirer
+      .prompt(
+        {
+          name: "employeeSelected",
+          type: "rawlist",
+          choices: function () {
+            let choiceArray = [];
+            
+            for (let i = 0; i < data.length; i++) {
+              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id);
+            }
+            return choiceArray;
+          },
+          message: "Select Employee to remove".red
+        },
+      )
+      .then(function (data) {
+        let idToDelete = data.employeeSelected.slice((data.employeeSelected.indexOf("#") + 2), data.employeeSelected.length)
+        //console.log("write del query that uses:" + idToDelete);
+        let deleteQuery = "DELETE FROM employee WHERE id=" + idToDelete;
+        connection.query(deleteQuery, function (err){
+          if(err){
+            throw err;
+          }
+          console.log("Employee Removed".red);
+          selectAction();
+        }
+
+        )
+
+      }
+      )
+  }
+  )
 }
 
 function addRole() {
@@ -181,7 +220,7 @@ function addRole() {
     },
     function (err) {
       if (err) throw err;
-      console.log("Role Added!");
+      console.log("\n\tRole Added!\n".green);
       selectAction();
     }
   );

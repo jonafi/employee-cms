@@ -36,7 +36,7 @@ VALUES
     (10, 'Associate', 48000, 4);
 
 CREATE TABLE employee(
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTO_INCREMENT,
   first_name VARCHAR(30),
   last_name VARCHAR(30),
   role_id INTEGER,
