@@ -3,6 +3,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const colors = require("colors");
+const cTable = require('console.table');
 // hiding my super secret password (which is password123), from evil TAs with a .gitignore
 const hiddenPassword = require("./password.js")
 
@@ -18,17 +19,15 @@ const connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
-  //displayAll();
-  selectAction();
+  displayAll();
+ // selectAction();
 });
 
 
 function displayDepartments(){
   connection.query("SELECT * FROM department", function (err, data) {
     if (err) throw err;
-    console.log("===================DEPARTMENTS========================".america);
-    console.log(data);
-    console.log("====================================================".america);
+      (console.table(" DEPARTMENTS ".inverse.brightGreen, data));
   }
   );
 }
@@ -36,9 +35,7 @@ function displayDepartments(){
 function displayRoles(){
   connection.query("SELECT * FROM role", function (err, data) {
     if (err) throw err;
-    console.log("====================ROLES============================".zebra)
-    console.log(data);
-    console.log("====================================================".zebra)
+    console.table(" ROLES ".brightWhite.bgRed, data);
   }
   );
 }
@@ -46,11 +43,10 @@ function displayRoles(){
 function displayEmployees(){
   connection.query("SELECT * FROM employee", function (err, data) {
     if (err) throw err;
-    console.log("====================EMPLOYEES===========================".rainbow)
-    console.log(data);
-    console.log("====================================================".rainbow)
+    console.table(" EMPLOYEES ".white.bgBlue, data);
   }
   );
+  connection.end();
 }
 
 function displayAll() {
