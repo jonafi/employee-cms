@@ -37,48 +37,8 @@ connection.connect(function (err) {
   `.brightCyan);
 
 
-
- // displayAll();
   selectAction();
 });
-
-
-function displayDepartments(){
-  connection.query("SELECT * FROM department", function (err, data) {
-    if (err) throw err;
-      (console.table(" DEPARTMENTS ".inverse.brightGreen, data));
-  }
-  );
-}
-
-function displayRoles(){
-  connection.query("SELECT * FROM role", function (err, data) {
-    if (err) throw err;
-    console.table(" ROLES ".brightWhite.bgRed, data);
-  }
-  );
-}
-
-function displayEmployees(){
-  connection.query("SELECT * FROM employee", function (err, data) {
-    if (err) throw err;
-    console.table(" EMPLOYEES ".white.bgBlue, data);
-    
-  }
-  );
-
-
-
-  connection.end();
-}
-
-function displayAll() {
-
-
-  displayDepartments();
-  displayRoles();
-  displayEmployees();
-}
 
 function selectAction() {
   inquirer
@@ -86,30 +46,111 @@ function selectAction() {
       name: "actionSelection",
       type: "list",
       message: "Please select an action",
-      choices: ["Add a department", "Add a role", "Exit"]
+      choices: [
+        "View All Employees",
+        "View All Employees By Department",
+        "View All Employees By Manager",
+        "Add Employee",
+        "Remove Employee",
+        "Update Employee Role",
+        "Update Employee Manager",
+        "View All Roles",
+        "Add Role",
+        "Remove Role",
+        "Exit"
+      ]
     })
     .then(function (answer) {
-      if (answer.actionSelection === "Add a department") {
-        addDepartment();
+
+      switch (answer.actionSelection) {
+        case "View All Employees":
+          displayEmployees();  // Done?
+          break;
+        case "View All Employees By Department":
+          console.log("view all emp. by dept. function"); // Sort? Join?
+          break;
+        case "View All Employees By Manager":
+          console.log("view all emp. by manager function"); // Sort? Join?
+          break;
+        case "Add Employee":
+          addEmployee(); // static, change to prompt
+          break;
+        case "Remove Employee":
+          console.log("remove emp function"); // DEL WHERE 
+          break;
+        case "Update Employee Role":
+          console.log("update emp role function"); //UPDATE WHERE
+          break;
+        case "Update Employee Manager":
+          console.log("update emp manager");  //UPDATE WHERE
+          break;
+        case "View All Roles":
+          displayRoles();  //Done?
+          break;
+        case "Add Role":
+          addRole();  //look at addEmployee
+          break;
+        case "Remove Role":
+          removeRole();  //look at removeEmployee
+          break;
+        default:
+          exitCheck();
+
       }
-      else if (answer.actionSelection === "Add a role") {
-        addRole();
-      } else {
-        exitCheck();
-      }
+
+
     });
 }
 
-function addDepartment() {
+
+function displayDepartments() {
+  connection.query("SELECT * FROM department", function (err, data) {
+    if (err) throw err;
+    (console.table(" DEPARTMENTS ".inverse.brightGreen, data));
+    selectAction();
+  }
+  );
+}
+
+function displayRoles() {
+  connection.query("SELECT * FROM role", function (err, data) {
+    if (err) throw err;
+    console.table(" ROLES ".brightWhite.bgRed, data);
+    selectAction();
+  }
+  );
+}
+
+function displayEmployees() {
+  connection.query("SELECT * FROM employee", function (err, data) {
+    if (err) throw err;
+    console.table(" EMPLOYEES ".white.bgBlue, data);
+    selectAction();
+
+  }
+  );
+}
+
+function displayAll() {
+  displayDepartments();
+  displayRoles();
+  displayEmployees();
+}
+
+
+function addEmployee() {
   connection.query(
-    "INSERT INTO department SET ?",
+    "INSERT INTO employee SET ?",
     {
-      id: 6,
-      name: "Human Resources"
+      id: 105,
+      first_name: "Tony",
+      last_name:"Stark",
+      role_id:5,
+      manager_id:null
     },
     function (err) {
       if (err) throw err;
-      console.log("Department Added!");
+      console.log("Employee Added!");
       selectAction();
     }
   );
