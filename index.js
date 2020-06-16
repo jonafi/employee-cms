@@ -19,8 +19,27 @@ const connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
-  displayAll();
- // selectAction();
+
+  console.log(`
+███████╗███╗   ███╗██████╗ ██╗      ██████╗ ██╗   ██╗███████╗███████╗
+██╔════╝████╗ ████║██╔══██╗██║     ██╔═══██╗╚██╗ ██╔╝██╔════╝██╔════╝
+█████╗  ██╔████╔██║██████╔╝██║     ██║   ██║ ╚████╔╝ █████╗  █████╗  
+██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██║   ██║  ╚██╔╝  ██╔══╝  ██╔══╝  
+███████╗██║ ╚═╝ ██║██║     ███████╗╚██████╔╝   ██║   ███████╗███████╗
+╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝
+                                                                     
+ ██████╗███╗   ███╗███████╗                                          
+██╔════╝████╗ ████║██╔════╝                                          
+██║     ██╔████╔██║███████╗                                          
+██║     ██║╚██╔╝██║╚════██║                                          
+╚██████╗██║ ╚═╝ ██║███████║                                          
+ ╚═════╝╚═╝     ╚═╝╚══════╝                                                                                                              
+  `.brightCyan);
+
+
+
+ // displayAll();
+  selectAction();
 });
 
 
@@ -44,12 +63,18 @@ function displayEmployees(){
   connection.query("SELECT * FROM employee", function (err, data) {
     if (err) throw err;
     console.table(" EMPLOYEES ".white.bgBlue, data);
+    
   }
   );
+
+
+
   connection.end();
 }
 
 function displayAll() {
+
+
   displayDepartments();
   displayRoles();
   displayEmployees();
