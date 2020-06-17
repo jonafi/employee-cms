@@ -34,7 +34,7 @@ connection.connect(function (err) {
 ██║     ██║╚██╔╝██║╚════██║                                          
 ╚██████╗██║ ╚═╝ ██║███████║                                          
  ╚═════╝╚═╝     ╚═╝╚══════╝                                                                                                              
-  `.brightCyan);
+  `.brightGreen);
 
 
   selectAction();
@@ -133,31 +133,42 @@ function displayEmployees() {
 }
 
 function viewByDepartment() {
+  connection.query("SELECT department_name FROM department", function (err, data) {
+    if (err) throw err;
   inquirer
     .prompt([
       {
         name: "departmentSelection",
         type: "list",
         message: "Select a department",
-        choices: ["Engineering", "Accounting", "Finance", "IT"]
+        choices: function () {
+          let choiceArray = [];
+
+          for (let i = 0; i < data.length; i++) {
+            choiceArray.push(data[i].department_name);
+          }
+          return choiceArray;
+        }
       }
     ])
     .then(function (answer) {
       let queryText = `SELECT employee.first_name, employee.last_name, role.title, department.department_name
-  FROM ((employee INNER JOIN role ON employee.role_id = role.id)
-  INNER JOIN department ON role.department_id = department.id)
-  WHERE department.department_name = '${answer.departmentSelection}';`;
+                        FROM ((employee INNER JOIN role ON employee.role_id = role.id)
+                        INNER JOIN department ON role.department_id = department.id)
+                        WHERE department.department_name = '${answer.departmentSelection}';`;
 
       connection.query(queryText, function (err, data) {
         if (err) throw err;
-        console.table("\nX Department".inverse, data);
-        if (data = "[]") console.log("No Matches\n".red)
-        selectAction();
+        console.table("\n", data);
+             selectAction();
 
       });
     }
     );
-  }
+
+  });
+
+}
 
 // function displayAll() {
 //   displayDepartments();
@@ -167,170 +178,106 @@ function viewByDepartment() {
 
 
 function addEmployee() {
-        inquirer
-          .prompt([
-            {
-              name: "employeeFirstName",
-              type: "input",
-              message: "Enter Employee First Name",
-            },
-            {
-              name: "employeeLastName",
-              type: "input",
-              message: "Enter Employee Last Name",
-            }
-          ])
-          .then(function (answer) {
-            connection.query(
-              "INSERT INTO employee SET ?",
-              {
-                first_name: answer.employeeFirstName,
-                last_name: answer.employeeLastName,
-                role_id: 5,
-                manager_id: null
-              },
-              function (err) {
-                if (err) throw err;
-                console.log("\n\tEmployee Added!\n".green);
-                selectAction();
-              }
-            );
-          });
+  inquirer
+    .prompt([
+      {
+        name: "employeeFirstName",
+        type: "input",
+        message: "Enter Employee First Name",
+      },
+      {
+        name: "employeeLastName",
+        type: "input",
+        message: "Enter Employee Last Name",
       }
+    ])
+    .then(function (answer) {
+      connection.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: answer.employeeFirstName,
+          last_name: answer.employeeLastName,
+          role_id: 5,
+          manager_id: null
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("\n\tEmployee Added!\n".green);
+          selectAction();
+        }
+      );
+    });
+}
 
 function removeEmployee() {
-        connection.query("SELECT * FROM employee", function (err, data) {
-          if (err) throw err;
-          inquirer
-            .prompt(
-              {
-                name: "employeeSelected",
-                type: "rawlist",
-                choices: function () {
-                  let choiceArray = [];
+  connection.query("SELECT * FROM employee", function (err, data) {
+    if (err) throw err;
+    inquirer
+      .prompt(
+        {
+          name: "employeeSelected",
+          type: "rawlist",
+          choices: function () {
+            let choiceArray = [];
 
-                  for (let i = 0; i < data.length; i++) {
-                    choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id);
-                  }
-                  return choiceArray;
-                },
-                message: "Select Employee to remove".red
-              },
-            )
-            .then(function (data) {
-              let idToDelete = data.employeeSelected.slice((data.employeeSelected.indexOf("#") + 2), data.employeeSelected.length)
-              //console.log("write del query that uses:" + idToDelete);
-              let deleteQuery = "DELETE FROM employee WHERE id=" + idToDelete;
-              connection.query(deleteQuery, function (err) {
-                if (err) {
-                  throw err;
-                }
-                console.log("Employee Removed".red);
-                selectAction();
-              }
-
-              )
-
+            for (let i = 0; i < data.length; i++) {
+              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id);
             }
-            )
+            return choiceArray;
+          },
+          message: "Select Employee to remove".red
+        },
+      )
+      .then(function (data) {
+        let idToDelete = data.employeeSelected.slice((data.employeeSelected.indexOf("#") + 2), data.employeeSelected.length)
+        //console.log("write del query that uses:" + idToDelete);
+        let deleteQuery = "DELETE FROM employee WHERE id=" + idToDelete;
+        connection.query(deleteQuery, function (err) {
+          if (err) {
+            throw err;
+          }
+          console.log("Employee Removed".red);
+          selectAction();
         }
+
         )
+
       }
+      )
+  }
+  )
+}
 
 function addRole() {
-        connection.query(
-          "INSERT INTO role SET ?",
-          {
-            id: 11,
-            title: "Partner",
-            salary: 100000,
-            department_id: 4
-          },
-          function (err) {
-            if (err) throw err;
-            console.log("\n\tRole Added!\n".green);
-            selectAction();
-          }
-        );
-      }
+  connection.query(
+    "INSERT INTO role SET ?",
+    {
+      id: 11,
+      title: "Partner",
+      salary: 100000,
+      department_id: 4
+    },
+    function (err) {
+      if (err) throw err;
+      console.log("\n\tRole Added!\n".green);
+      selectAction();
+    }
+  );
+}
 
 function exitCheck() {
-        inquirer
-          .prompt({
-            name: "exitConfirm",
-            type: "confirm",
-            message: "Are you sure you want to exit?".yellow,
-          })
-          .then(function (answer) {
-            if (answer.exitConfirm == true) {
-              connection.end();
-            }
-            else {
-              selectAction();
-            }
-          });
+  inquirer
+    .prompt({
+      name: "exitConfirm",
+      type: "confirm",
+      message: "Are you sure you want to exit?".yellow,
+    })
+    .then(function (answer) {
+      if (answer.exitConfirm == true) {
+        connection.end();
       }
-
-
-// function bidAuction() {
-//   // query the database for all items being auctioned
-//   connection.query("SELECT * FROM auctions", function(err, results) {
-//     if (err) throw err;
-//     // once you have the items, prompt the user for which they'd like to bid on
-//     inquirer
-//       .prompt([
-//         {
-//           name: "choice",
-//           type: "rawlist",
-//           choices: function() {
-//             let choiceArray = [];
-//             for (let i = 0; i < results.length; i++) {
-//               choiceArray.push(results[i].item_name);
-//             }
-//             return choiceArray;
-//           },
-//           message: "What auction would you like to place a bid in?"
-//         },
-//         {
-//           name: "bid",
-//           type: "input",
-//           message: "How much would you like to bid?"
-//         }
-//       ])
-//       .then(function(answer) {
-//         // get the information of the chosen item
-//         let chosenItem;
-//         for (let i = 0; i < results.length; i++) {
-//           if (results[i].item_name === answer.choice) {
-//             chosenItem = results[i];
-//           }
-//         }
-
-//         // determine if bid was high enough
-//         if (chosenItem.highest_bid < parseInt(answer.bid)) {
-//           // bid was high enough, so update db, let the user know, and start over
-//           connection.query(
-//             "UPDATE auctions SET ? WHERE ?",
-//             [
-//               {
-//                 highest_bid: answer.bid
-//               },
-//               {
-//                 id: chosenItem.id
-//               }
-//             ],
-//             function(error) {
-//               if (error) throw err;
-//               console.log("Bid placed successfully!");
-//               start();
-//             }
-//           );
-//         }
-//         else {
-//           // bid wasn't high enough, so apologize and start over
-//           console.log("Your bid was too low. Try again...");
-//           start();
-//         }
-//       });
-//   });
-// }
+      else {
+        selectAction();
+      }
+    });
+}
