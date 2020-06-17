@@ -80,7 +80,7 @@ function selectAction() {
           removeEmployee(); // current
           break;
         case "Update Employee Role":
-          console.log("update emp role function"); //UPDATE WHERE
+          updateRole();
           break;
         case "Update Employee Manager":
           console.log("update emp manager");  //UPDATE WHERE
@@ -106,7 +106,7 @@ function selectAction() {
 function displayDepartments() {
   connection.query("SELECT * FROM department", function (err, data) {
     if (err) throw err;
-    (console.table(" DEPARTMENTS ".inverse.brightGreen, data));
+    (console.table(" DEPARTMENTS ".brightWhite.bgGreen, data));
     selectAction();
   }
   );
@@ -115,7 +115,7 @@ function displayDepartments() {
 function displayRoles() {
   connection.query("SELECT * FROM role", function (err, data) {
     if (err) throw err;
-    console.table(" ROLES ".brightWhite.bgRed, data);
+    console.table(" ROLES ".brightWhite.bgGray, data);
     selectAction();
   }
   );
@@ -125,7 +125,7 @@ function displayEmployees() {
   connection.query("SELECT * FROM employee", function (err, data) {
     if (err) throw err;
 
-    console.table("\n EMPLOYEES ".white.bgBlue, data);
+    console.table("\n EMPLOYEES ".brightWhite.bgBlue, data);
     selectAction();
 
   }
@@ -159,7 +159,7 @@ function viewByDepartment() {
 
       connection.query(queryText, function (err, data) {
         if (err) throw err;
-        console.table("\n", data);
+        console.table("\n Department View ".white.bgGreen, data);
              selectAction();
 
       });
@@ -197,7 +197,7 @@ function viewManager() {
 
       connection.query(queryText, function (err, data) {
         if (err) throw err;
-        console.table("\nManager Info:", data);
+        console.table("\n Manager ".white.bgBlue, data);
              selectAction();
 
       });
@@ -289,6 +289,67 @@ function removeEmployee() {
   }
   )
 }
+
+function updateRole() {
+
+//Select employee
+
+//Select new role
+
+//update query
+
+
+connection.query("SELECT first_name, last_name, role_id, id FROM employee", function (err, data) {
+  if (err) throw err;
+inquirer
+  .prompt([
+    {
+      name: "employeeSelection",
+      type: "list",
+      message: "Select an Employee",
+      choices: function () {
+        let choiceArray = [];
+
+        for (let i = 0; i < data.length; i++) {
+          choiceArray.push(data[i].first_name + " " + data[i].last_name);
+        }
+        return choiceArray;
+      }
+    }
+    ,
+    {
+      name:"newRole",
+      type:"list",
+      message:"Select a new Role",
+      choices: function () {
+        let choiceArray = [];
+        for (let i = 0; i < data.length; i++) {
+          if(data[i].role_id){
+            choiceArray.push(data[i].role_id);
+          }
+        }
+        return choiceArray;
+      }
+    }
+  ])
+  .then(function (answer) {
+    let queryText = `UPDATE employee
+                    SET role_id = 2
+                    WHERE id=101;`;
+console.log(answer);
+    // connection.query(queryText, function (err, data) {
+    //   if (err) throw err;
+    //   console.table("\n Manager ".white.bgBlue, data);
+    //        selectAction();
+
+    // });
+  }
+  );
+
+});
+
+}
+
 
 function addRole() {
   connection.query(
