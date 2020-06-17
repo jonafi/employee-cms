@@ -1,10 +1,9 @@
 //Dependencies //////////////////////////////////
-
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const colors = require("colors");
 const cTable = require('console.table');
-// hiding my super secret password (which is password123), from evil TAs with a .gitignore
+// hiding my super secret password from evil TAs with a .gitignore
 const hiddenPassword = require("./password.js")
 
 // MySQL connection setup ///////////////////////
@@ -16,7 +15,7 @@ const connection = mysql.createConnection({
   database: "employee_cms_db"
 });
 
-// connect to the mysql server and sql database
+// connect to the mysql server and sql database, call the menu
 connection.connect(function (err) {
   if (err) throw err;
 
@@ -40,6 +39,8 @@ connection.connect(function (err) {
   selectAction();
 });
 
+//Named Functions /////////////////////////////
+
 function selectAction() {
   inquirer
     .prompt({
@@ -48,8 +49,8 @@ function selectAction() {
       message: "Please select an action",
       choices: [
         "View All Employees",
-        "View All Employees By Department",
-        "View All Employees By Manager",
+        "View Employees By Department",
+        "View Employee Manager",
         "Add Employee",
         "Remove Employee",
         "Update Employee Role",
@@ -66,12 +67,11 @@ function selectAction() {
         case "View All Employees":
           displayEmployees();
           break;
-        case "View All Employees By Department":
-          console.log("view all emp. by dept. function"); // Sort? Join?
+        case "View Employees By Department":
           viewByDepartment();
           break;
-        case "View All Employees By Manager":
-          console.log("view all emp. by manager function"); // Sort? Join?
+        case "View Employee Manager":
+          viewManager();
           break;
         case "Add Employee":
           addEmployee(); // static, change to prompt
@@ -170,6 +170,49 @@ function viewByDepartment() {
 
 }
 
+
+function viewManager() {
+  connection.query("SELECT first_name, last_name, manager_id FROM employee", function (err, data) {
+    if (err) throw err;
+  inquirer
+    .prompt([
+      {
+        name: "employeeSelection",
+        type: "list",
+        message: "Select an Underling",
+        choices: function () {
+          let choiceArray = [];
+
+          for (let i = 0; i < data.length; i++) {
+            choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].manager_id);
+          }
+          return choiceArray;
+        }
+      }
+    ])
+    .then(function (answer) {
+      let managerID= answer.employeeSelection.slice((answer.employeeSelection.indexOf("#") + 2), answer.employeeSelection.length)
+      let queryText = `SELECT first_name, last_name FROM employee
+      WHERE id = '${managerID}';`;
+
+      connection.query(queryText, function (err, data) {
+        if (err) throw err;
+        console.table("\nManager Info:", data);
+             selectAction();
+
+      });
+    }
+    );
+
+  });
+
+}
+
+
+
+
+
+
 // function displayAll() {
 //   displayDepartments();
 //   displayRoles();
@@ -197,8 +240,7 @@ function addEmployee() {
         {
           first_name: answer.employeeFirstName,
           last_name: answer.employeeLastName,
-          role_id: 5,
-          manager_id: null
+
         },
         function (err) {
           if (err) throw err;
@@ -236,7 +278,7 @@ function removeEmployee() {
           if (err) {
             throw err;
           }
-          console.log("Employee Removed".red);
+          console.log("\nEmployee Removed!\n".red);
           selectAction();
         }
 

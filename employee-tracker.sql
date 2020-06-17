@@ -4,10 +4,10 @@ USE employee_cms_db;
 
 CREATE TABLE department(
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(30)
+  department_name VARCHAR(30)
 );
 
-INSERT INTO department(id, name)
+INSERT INTO department(id, department_name)
 VALUES
   	(1, 'Accounting'),
     (2, 'IT'),
@@ -50,20 +50,25 @@ VALUES
 UPDATE employee
 SET manager_id= 104
 WHERE id<104;
+
+Update employee
+SET manager_id = 103
+WHERE id = 101;
     
 SELECT * FROM department;
 SELECT * FROM role;
 SELECT * FROM employee;
 
-SELECT employee.first_name, employee.last_name, role.title, department.name
+SELECT employee.first_name, employee.last_name, role.title, department.department_name
 FROM ((employee
 INNER JOIN role ON employee.role_id = role.id)
 INNER JOIN department ON role.department_id = department.id)
-WHERE department.name = 'Engineering';
+WHERE department.department_name = 'Engineering';
 
+SELECT department_name FROM department;
 
-
-
+SELECT first_name, last_name FROM employee
+WHERE manager_id = 104;
 
 
 
