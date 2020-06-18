@@ -92,14 +92,14 @@ function selectAction() {
           updateRole();
           break;
         case "Update Employee Manager":
-          console.log("update emp manager");  //UPDATE WHERE
+          console.log("update emp manager");  
           break;
 
         case "Add Role":
-          addRole();  //look at addEmployee
+          addRole();  
           break;
         case "Remove Role":
-          removeRole();  //look at removeEmployee
+          removeRole();  
           break;
         default:
           exitCheck();
@@ -120,6 +120,8 @@ function display(tableName, displayName) {
 }
 
 function addEmployee() {
+
+
   inquirer
     .prompt([
       {
@@ -131,14 +133,37 @@ function addEmployee() {
         name: "employeeLastName",
         type: "input",
         message: "Enter Employee Last Name",
+      },
+      {
+        name: "employeeRole",
+        type: "list",
+        message: "Enter Role",
+        choices: ["Intern","Associate","Manager","Director"]
       }
     ])
     .then(function (answer) {
+      let roleNumber;
+      switch (answer.employeeRole){
+        case "Intern":
+          roleNumber = 1;
+          break;
+        case "Associate":
+          roleNumber = 2;
+          break;
+        case "Manager":
+          roleNumber = 3;
+          break;
+        case "Director":
+          roleNumber = 4;
+          break;
+
+      }
       connection.query(
         "INSERT INTO employee SET ?",
         {
           first_name: answer.employeeFirstName,
           last_name: answer.employeeLastName,
+          role_id: roleNumber
 
         },
         function (err) {
@@ -308,22 +333,107 @@ function updateRole() {
   });
 }
 
-
 function addRole() {
-  connection.query(
-    "INSERT INTO role SET ?",
-    {
-      id: 11,
-      title: "Partner",
-      salary: 100000,
-      department_id: 4
-    },
-    function (err) {
-      if (err) throw err;
-      console.log("\n\tRole Added!\n".green);
-      selectAction();
-    }
-  );
+  inquirer
+    .prompt([
+      {
+        name: "roleName",
+        type: "input",
+        message: "Enter Role Name"
+      },     
+      {
+        name: "roleSalary",
+        type: "input",
+        message: "Salary"
+      },     
+      {
+        name: "department",
+        type: "input",
+        message: "Department"
+      }      
+     ])
+    .then(function (answer) {
+     connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title: answer.roleName,
+          salary: answer.roleSalary,
+          department_id: answer.department
+
+        },
+        function (err) {
+          if (err) throw err;
+          console.log("\n\tRole Added!\n".green);
+          selectAction();
+        }
+      );
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // connection.query(
+  //   "INSERT INTO role SET ?",
+  //   {
+  //     id: 11,
+  //     title: "Partner",
+  //     salary: 100000,
+  //     department_id: 4
+  //   },
+  //   function (err) {
+  //     if (err) throw err;
+  //     console.log("\n\tRole Added!\n".green);
+  //     selectAction();
+  //   }
+  // );
+}
+
+function removeRole() {
+  connection.query("SELECT * FROM role", function (err, data) {
+    if (err) throw err;
+    inquirer
+      .prompt(
+        {
+          name: "roleSelected",
+          type: "rawlist",
+          choices: function () {
+            let choiceArray = [];
+
+            for (let i = 0; i < data.length; i++) {
+              choiceArray.push(data[i].title + " ID# " + data[i].id);
+            }
+            return choiceArray;
+          },
+          message: "Select role to remove".red
+        },
+      )
+      .then(function (data) {
+        let idToDelete = data.roleSelected.slice((data.roleSelected.indexOf("#") + 2), data.roleSelected.length)
+        let deleteQuery = "DELETE FROM role WHERE id=" + idToDelete;
+        connection.query(deleteQuery, function (err) {
+          if (err) {
+            throw err;
+          }
+          console.log("\nRole Removed!\n".red);
+          selectAction();
+        }
+        )
+      }
+      )
+  }
+  )
 }
 
 function exitCheck() {
