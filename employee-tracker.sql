@@ -45,15 +45,19 @@ VALUES
 	(101, 'Bill', 'Dentern', 1),
     (102, 'Susan', 'Anasc' ,2),
     (103, 'Peter', 'Mando', 3),
-    (104, 'Steven', 'Spielberg', 4);
+    (104, 'Steven', 'Spielberg', 4),
+    (105, 'Bobby', 'Ingsoll', 1); 
     
-UPDATE employee
-SET manager_id= 104
-WHERE id<104;
 
 Update employee
 SET manager_id = 103
 WHERE id = 101;
+Update employee
+SET manager_id = 104
+WHERE id = 103;
+Update employee
+SET manager_id = 104
+WHERE id = 102;
     
 SELECT * FROM department;
 SELECT * FROM role;
@@ -69,6 +73,15 @@ SELECT department_name FROM department;
 
 SELECT first_name, last_name FROM employee
 WHERE manager_id = 104;
+
+UPDATE employee
+SET role_id = 2
+WHERE id=101; 
+
+SELECT employee.first_name, employee.last_name, employee.id, employee.role_id, role.title
+FROM (employee
+INNER JOIN role ON employee.role_id = role.id)
+
 
 
 
