@@ -49,22 +49,21 @@ function selectAction() {
       type: "list",
       message: "Please select an action",
       choices: [
-        "View Employees",
-        "View Departments",
-        "View Roles",
-        "Add Employee",
-        "Remove Employee",
-        "View Employees By Department",
-        "View Employee Manager",
-        "Update Employee Role",
-        "Update Employee Manager",
-        "Add Role",
-        "Remove Role",
-        "Exit"
+        "View Employees",  //OK
+        "View Departments",  //OK
+        "View Roles",  //OK
+        "Add Employee",   //change role to db call add role functionality
+        "Remove Employee", // add error handling for deleting someone's manager
+        "View Employees By Department",  //OK
+        "View Employee Manager", // add error handling (not blank) for manager-less people
+        "Update Employee Role",  // incomplete -- can't do multiple db call
+        "Update Employee Manager", //TODO
+        "Add Role",  // Needs db call to show department options
+        "Remove Role",  //add error handling for deleting a role that someone still has
+        "Exit" // OK
       ]
     })
     .then(function (answer) {
-
       switch (answer.actionSelection) {
         case "View Employees":
           display("employee", " EMPLOYEES ");
@@ -87,26 +86,21 @@ function selectAction() {
         case "View Employee Manager":
           viewManager();
           break;
-
         case "Update Employee Role":
           updateRole();
           break;
         case "Update Employee Manager":
-          console.log("update emp manager");  
+          console.log("update emp manager");
           break;
-
         case "Add Role":
-          addRole();  
+          addRole();
           break;
         case "Remove Role":
-          removeRole();  
+          removeRole();
           break;
         default:
           exitCheck();
-
       }
-
-
     });
 }
 
@@ -115,11 +109,12 @@ function display(tableName, displayName) {
     if (err) throw err;
     console.table(`\n ${displayName}`.brightWhite.bgBlue, data);
     selectAction();
-  }
-  );
+  });
 }
 
 function addEmployee() {
+
+
 
 
   inquirer
@@ -138,12 +133,12 @@ function addEmployee() {
         name: "employeeRole",
         type: "list",
         message: "Enter Role",
-        choices: ["Intern","Associate","Manager","Director"]
+        choices: ["Intern", "Associate", "Manager", "Director"]
       }
     ])
     .then(function (answer) {
       let roleNumber;
-      switch (answer.employeeRole){
+      switch (answer.employeeRole) {
         case "Intern":
           roleNumber = 1;
           break;
@@ -156,7 +151,6 @@ function addEmployee() {
         case "Director":
           roleNumber = 4;
           break;
-
       }
       connection.query(
         "INSERT INTO employee SET ?",
@@ -164,7 +158,6 @@ function addEmployee() {
           first_name: answer.employeeFirstName,
           last_name: answer.employeeLastName,
           role_id: roleNumber
-
         },
         function (err) {
           if (err) throw err;
@@ -185,7 +178,6 @@ function removeEmployee() {
           type: "rawlist",
           choices: function () {
             let choiceArray = [];
-
             for (let i = 0; i < data.length; i++) {
               choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id);
             }
@@ -222,7 +214,6 @@ function viewByDepartment() {
           message: "Select a department",
           choices: function () {
             let choiceArray = [];
-
             for (let i = 0; i < data.length; i++) {
               choiceArray.push(data[i].department_name);
             }
@@ -235,18 +226,14 @@ function viewByDepartment() {
                         FROM ((employee INNER JOIN role ON employee.role_id = role.id)
                         INNER JOIN department ON role.department_id = department.id)
                         WHERE department.department_name = '${answer.departmentSelection}';`;
-
         connection.query(queryText, function (err, data) {
           if (err) throw err;
           console.table("\n Department View ".white.bgGreen, data);
           selectAction();
-
         });
       }
       );
-
   });
-
 }
 
 function viewManager() {
@@ -271,7 +258,6 @@ function viewManager() {
         let managerID = answer.employeeSelection.slice((answer.employeeSelection.indexOf("#") + 2), answer.employeeSelection.length)
         let queryText = `SELECT first_name, last_name FROM employee
                          WHERE id = '${managerID}';`;
-
         connection.query(queryText, function (err, data) {
           if (err) throw err;
           console.table("\n Manager ".white.bgBlue, data);
@@ -283,7 +269,7 @@ function viewManager() {
 }
 
 function updateRole() {
-  queryText=  `SELECT *
+  queryText = `SELECT *
                FROM (employee INNER JOIN role ON employee.role_id = role.id)`
   connection.query(queryText, function (err, data) {
     if (err) throw err;
@@ -297,7 +283,7 @@ function updateRole() {
             let choiceArray = [];
 
             for (let i = 0; i < data.length; i++) {
-              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id) ;
+              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id);
             }
             return choiceArray;
           }
@@ -309,8 +295,8 @@ function updateRole() {
           choices: function () {
             let choiceArray2 = [];
             for (let i = 0; i < data.length; i++) {
-              if(choiceArray2.indexOf(data[i].title)===-1){
-              choiceArray2.push(data[i].title);
+              if (choiceArray2.indexOf(data[i].title) === -1) {
+                choiceArray2.push(data[i].title);
               }
             }
             return choiceArray2;
@@ -321,13 +307,7 @@ function updateRole() {
         let queryText = `UPDATE employee
                         SET role_id = 2
                         WHERE id=${answer.employeeSelection} ;`;
-                    console.log(queryText)
-        // connection.query(queryText, function (err, data) {
-        //   if (err) throw err;
-        //   console.table("\n Manager ".white.bgBlue, data);
-        //        selectAction();
-
-        // });
+        console.log(queryText)
       }
       );
   });
@@ -340,20 +320,20 @@ function addRole() {
         name: "roleName",
         type: "input",
         message: "Enter Role Name"
-      },     
+      },
       {
         name: "roleSalary",
         type: "input",
         message: "Salary"
-      },     
+      },
       {
         name: "department",
         type: "input",
         message: "Department"
-      }      
-     ])
+      }
+    ])
     .then(function (answer) {
-     connection.query(
+      connection.query(
         "INSERT INTO role SET ?",
         {
           title: answer.roleName,
@@ -368,36 +348,6 @@ function addRole() {
         }
       );
     });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // connection.query(
-  //   "INSERT INTO role SET ?",
-  //   {
-  //     id: 11,
-  //     title: "Partner",
-  //     salary: 100000,
-  //     department_id: 4
-  //   },
-  //   function (err) {
-  //     if (err) throw err;
-  //     console.log("\n\tRole Added!\n".green);
-  //     selectAction();
-  //   }
-  // );
 }
 
 function removeRole() {
@@ -452,5 +402,3 @@ function exitCheck() {
       }
     });
 }
-
-
