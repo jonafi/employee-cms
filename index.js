@@ -49,12 +49,12 @@ function selectAction() {
       type: "list",
       message: "Please select an action",
       choices: [
-        "View Employees",  //OK
-        "View Departments",  //OK
-        "View Roles",  //OK
+        "View Employees",  
+        "View Departments",
+        "View Roles",  
         "Add Employee",   //change role to db call add role functionality
         "Remove Employee", // add error handling for deleting someone's manager
-        "View Employees By Department",  //OK
+        "View Employees By Department",  
         "View Employee Manager", // add error handling (not blank) for manager-less people
         "Update Employee Role",  // incomplete -- can't do multiple db call
         "Update Employee Manager", //TODO
@@ -113,9 +113,16 @@ function display(tableName, displayName) {
 }
 
 function addEmployee() {
-
-
-
+  connection.query("SELECT * FROM employee INNER JOIN role ON role.id = employee.role_id", 
+  function (err, data) {
+    let rolesArray = [];
+    for(let i=0; i<data.length; i++){
+        let choice = data[i].title + " " + data[i].id; 
+        rolesArray.push(choice);
+      }
+      //remove dupes 
+      rolesArray = [... new Set(rolesArray)]  //magic ?  found on : https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
+    if (err) throw err;
 
   inquirer
     .prompt([
@@ -133,31 +140,25 @@ function addEmployee() {
         name: "employeeRole",
         type: "list",
         message: "Enter Role",
-        choices: ["Intern", "Associate", "Manager", "Director"]
-      }
+        choices: rolesArray
+      },
+      {
+        name: "employeeManager",
+        type: "list",
+        message: "Enter Employee Manager",
+        //choices: listEmployeeChoices(data)
+      },
     ])
     .then(function (answer) {
-      let roleNumber;
-      switch (answer.employeeRole) {
-        case "Intern":
-          roleNumber = 1;
-          break;
-        case "Associate":
-          roleNumber = 2;
-          break;
-        case "Manager":
-          roleNumber = 3;
-          break;
-        case "Director":
-          roleNumber = 4;
-          break;
-      }
+      let roleIdHack = answer.employeeRole.slice(answer.employeeRole.length -1 );  // ran out of time to do this properly
+      let employeeIdHack = answer.employeeManager.slice(answer.employeeManager.length -3); //last 3 characters
       connection.query(
         "INSERT INTO employee SET ?",
         {
           first_name: answer.employeeFirstName,
           last_name: answer.employeeLastName,
-          role_id: roleNumber
+          role_id: roleIdHack,
+          manager_id: employeeIdHack, 
         },
         function (err) {
           if (err) throw err;
@@ -166,6 +167,7 @@ function addEmployee() {
         }
       );
     });
+  })
 }
 
 function removeEmployee() {
@@ -176,13 +178,7 @@ function removeEmployee() {
         {
           name: "employeeSelected",
           type: "rawlist",
-          choices: function () {
-            let choiceArray = [];
-            for (let i = 0; i < data.length; i++) {
-              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].id);
-            }
-            return choiceArray;
-          },
+          choices: listEmployeeChoices (data),
           message: "Select Employee to remove".red
         },
       )
@@ -191,9 +187,13 @@ function removeEmployee() {
         let deleteQuery = "DELETE FROM employee WHERE id=" + idToDelete;
         connection.query(deleteQuery, function (err) {
           if (err) {
-            throw err;
-          }
-          console.log("\nEmployee Removed!\n".red);
+            //throw err;
+            if (err.errno == 1451){
+              console.log("\nCan not remove employee listed as someone's manager!\n".red)
+            }
+            }
+          
+          if(!err) console.log("\nEmployee Removed!\n".red);
           selectAction();
         }
         )
@@ -248,7 +248,7 @@ function viewManager() {
           choices: function () {
             let choiceArray = [];
             for (let i = 0; i < data.length; i++) {
-              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID# " + data[i].manager_id);
+              choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID # " + data[i].manager_id);
             }
             return choiceArray;
           }
@@ -259,6 +259,7 @@ function viewManager() {
         let queryText = `SELECT first_name, last_name FROM employee
                          WHERE id = '${managerID}';`;
         connection.query(queryText, function (err, data) {
+          console.log(typeof data);
           if (err) throw err;
           console.table("\n Manager ".white.bgBlue, data);
           selectAction();
@@ -304,8 +305,9 @@ function updateRole() {
         }
       ])
       .then(function (answer) {
-        let queryText = `UPDATE employee
-                        SET role_id = 2
+        let roleIdHack = answer.newRole;
+        console.log(roleIdHack);
+        let queryText = `UPDATE employee SET role_id = 2
                         WHERE id=${answer.employeeSelection} ;`;
         console.log(queryText)
       }
@@ -358,14 +360,7 @@ function removeRole() {
         {
           name: "roleSelected",
           type: "rawlist",
-          choices: function () {
-            let choiceArray = [];
-
-            for (let i = 0; i < data.length; i++) {
-              choiceArray.push(data[i].title + " ID# " + data[i].id);
-            }
-            return choiceArray;
-          },
+          choices: listRoleChoices(data),
           message: "Select role to remove".red
         },
       )
@@ -401,4 +396,24 @@ function exitCheck() {
         selectAction();
       }
     });
+}
+
+// helper functions
+
+const listEmployeeChoices = function (data) {
+  let choiceArray = [];
+
+  for (let i = 0; i < data.length; i++) {
+    choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID # " + data[i].id);
+  }
+  return choiceArray;
+}
+
+const listRoleChoices = function (data) {
+  let choiceArray = [];
+
+  for (let i = 0; i < data.length; i++) {
+    choiceArray.push(data[i].title + " ID # " + data[i].manager_id);
+  }
+  return choiceArray;
 }
