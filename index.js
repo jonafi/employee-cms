@@ -49,12 +49,12 @@ function selectAction() {
       type: "list",
       message: "Please select an action",
       choices: [
-        "View Employees",  
+        "View Employees",
         "View Departments",
-        "View Roles",  
+        "View Roles",
         "Add Employee",   //change role to db call add role functionality
         "Remove Employee", // add error handling for deleting someone's manager
-        "View Employees By Department",  
+        "View Employees By Department",
         "View Employee Manager", // add error handling (not blank) for manager-less people
         "Update Employee Role",  // incomplete -- can't do multiple db call
         "Update Employee Manager", //TODO
@@ -113,16 +113,32 @@ function display(tableName, displayName) {
 }
 
 function addEmployee() {
-  connection.query("SELECT * FROM employee INNER JOIN role ON role.id = employee.role_id", 
-  function (err, data) {
-    let rolesArray = [];
-    for(let i=0; i<data.length; i++){
-        let choice = data[i].title + " " + data[i].id; 
-        rolesArray.push(choice);
-      }
-      //remove dupes 
-      rolesArray = [... new Set(rolesArray)]  //magic ?  found on : https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
-    if (err) throw err;
+  let managerQuery = `SELECT * FROM employee`;
+  let managerChoices = [];
+  connection.query(managerQuery, function (err, data) {
+
+    if (err) {
+      throw err;
+    }
+    for (let i = 0; i < data.length; i++) {
+      managerChoices.push(data[i].first_name + " " + data[i].last_name + " " + data[i].id);
+    }
+  }
+  );
+
+  let roleQuery = `SELECT * FROM role`;
+  let roleChoices = [];
+  connection.query(roleQuery, function (err, data) {
+
+    if (err) {
+      throw err;
+    }
+    for (let i = 0; i < data.length; i++) {
+      roleChoices.push(data[i].title + " " + data[i].id);
+    }
+  }
+  );
+
 
   inquirer
     .prompt([
@@ -140,25 +156,25 @@ function addEmployee() {
         name: "employeeRole",
         type: "list",
         message: "Enter Role",
-        choices: rolesArray
+        choices: roleChoices
       },
       {
         name: "employeeManager",
         type: "list",
         message: "Enter Employee Manager",
-        //choices: listEmployeeChoices(data)
+        choices: managerChoices
       },
     ])
     .then(function (answer) {
-      let roleIdHack = answer.employeeRole.slice(answer.employeeRole.length -1 );  // ran out of time to do this properly
-      let employeeIdHack = answer.employeeManager.slice(answer.employeeManager.length -3); //last 3 characters
+      let roleIdHack = answer.employeeRole.slice(answer.employeeRole.length - 1);
+      let employeeIdHack = answer.employeeManager.slice(answer.employeeManager.length - 3);
       connection.query(
         "INSERT INTO employee SET ?",
         {
           first_name: answer.employeeFirstName,
           last_name: answer.employeeLastName,
           role_id: roleIdHack,
-          manager_id: employeeIdHack, 
+          manager_id: employeeIdHack,
         },
         function (err) {
           if (err) throw err;
@@ -167,41 +183,54 @@ function addEmployee() {
         }
       );
     });
-  })
 }
 
+
 function removeEmployee() {
-  connection.query("SELECT * FROM employee", function (err, data) {
-    if (err) throw err;
+  let employeeQuery = `SELECT * FROM employee`;
+  let employeeChoices = [];
+  connection.query(employeeQuery, function (err, data) {
+
+    if (err) {
+      throw err;
+    }
+    for (let i = 0; i < data.length; i++) {
+      employeeChoices.push(data[i].first_name + " " + data[i].last_name + " " + data[i].id);
+    }
+
+
     inquirer
       .prompt(
         {
           name: "employeeSelected",
-          type: "rawlist",
-          choices: listEmployeeChoices (data),
-          message: "Select Employee to remove".red
-        },
+          type: "list",
+          message: "Enter Employee to remove",
+          choices: employeeChoices
+        }
       )
-      .then(function (data) {
-        let idToDelete = data.employeeSelected.slice((data.employeeSelected.indexOf("#") + 2), data.employeeSelected.length)
-        let deleteQuery = "DELETE FROM employee WHERE id=" + idToDelete;
+      .then(function (answer) {
+        let idToDelete = answer.employeeSelected.slice(answer.employeeSelected.length - 3);
+        let deleteQuery = `DELETE FROM employee WHERE id=${idToDelete}`;
         connection.query(deleteQuery, function (err) {
+
+
           if (err) {
             //throw err;
-            if (err.errno == 1451){
+            if (err.errno == 1451) {
               console.log("\nCan not remove employee listed as someone's manager!\n".red)
             }
-            }
-          
-          if(!err) console.log("\nEmployee Removed!\n".red);
+          }
+
+          if (!err) console.log("\nEmployee Removed!\n".red);
           selectAction();
-        }
-        )
-      }
-      )
+        });
+      });
   }
-  )
+  );
 }
+
+
+
 
 function viewByDepartment() {
   connection.query("SELECT department_name FROM department", function (err, data) {
@@ -398,22 +427,3 @@ function exitCheck() {
     });
 }
 
-// helper functions
-
-const listEmployeeChoices = function (data) {
-  let choiceArray = [];
-
-  for (let i = 0; i < data.length; i++) {
-    choiceArray.push(data[i].first_name + " " + data[i].last_name + " ID # " + data[i].id);
-  }
-  return choiceArray;
-}
-
-const listRoleChoices = function (data) {
-  let choiceArray = [];
-
-  for (let i = 0; i < data.length; i++) {
-    choiceArray.push(data[i].title + " ID # " + data[i].manager_id);
-  }
-  return choiceArray;
-}
