@@ -25,8 +25,8 @@ CREATE TABLE role(
 
 INSERT INTO role(id, title, salary, department_id)
 VALUES
-  	(1, 'Intern', 30000, 5),
-    (2, 'Associate', 40000, 1),
+  	(1, 'Intern', 30000, 3),
+    (2, 'Associate', 40000, 3),
     (3, 'Manager', 50000, 3),
     (4, 'Director', 60000, 5);
 
@@ -75,15 +75,17 @@ SELECT first_name, last_name FROM employee
 WHERE manager_id = 104;
 
 UPDATE employee
-SET role_id = 2
+SET role_id = 1
 WHERE id=101; 
 
 SELECT employee.first_name, employee.last_name, employee.id, employee.role_id, role.title
 FROM (employee
-INNER JOIN role ON employee.role_id = role.id)
+INNER JOIN role ON employee.role_id = role.id);
 
+/*UPDATE employee SET role_id = 3 WHERE id = 105;*/
 
+SELECT SUM(salary) FROM role WHERE id = 3;
 
-
+SELECT SUM(salary) FROM (employee INNER JOIN role ON employee.role_id = role.id) WHERE role.id=1;
 
 

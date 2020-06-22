@@ -56,9 +56,9 @@ function selectAction() {
         "Remove Employee",
         "View Employees By Department",
         "View Employee Manager", 
-        "View Department Budget Total",
+       // "View Department Budget Total", // Ran out of time
         "Update Employee Role",  
-        "Update Employee Manager", 
+      //  "Update Employee Manager", // Ran out of time
         "Remove Role",  
         "Exit"
       ]
@@ -95,9 +95,11 @@ function selectAction() {
         case "Update Employee Role":
           updateRole();
           break;
-        case "View Department Budget Total":
-          viewDepartmentBudgetTotal();
-          break;
+
+        // Broken ///////////
+        // case "View Department Budget Total":
+        //   viewDepartmentBudgetTotal();
+        //   break;
         case "Remove Role":
           removeRole();
           break;
@@ -374,19 +376,27 @@ function updateRole() {
 }
 
 function removeRole() {
-  connection.query("SELECT * FROM role", function (err, data) {
-    if (err) throw err;
+  let roleQuery = `SELECT * FROM role`;
+  let roleChoices = [];
+  connection.query(roleQuery, function (err, data) {
+
+    if (err) {
+      throw err;
+    }
+    for (let i = 0; i < data.length; i++) {
+      roleChoices.push(data[i].title + " " + data[i].id);
+    }
     inquirer
       .prompt(
         {
           name: "roleSelected",
           type: "rawlist",
-          choices: listRoleChoices(data),
-          message: "Select role to remove".red
+          message: "Select role to remove".red,
+          choices: roleChoices
         },
       )
-      .then(function (data) {
-        let idToDelete = data.roleSelected.slice((data.roleSelected.indexOf("#") + 2), data.roleSelected.length)
+      .then(function (answer) {
+        let idToDelete = answer.roleSelected.slice(answer.roleSelected.length -1)
         let deleteQuery = "DELETE FROM role WHERE id=" + idToDelete;
         connection.query(deleteQuery, function (err) {
           if (err) {
@@ -446,37 +456,37 @@ function removeEmployee() {
 }
 
 
-function viewDepartmentBudgetTotal() {
-  connection.query("SELECT * FROM department", function (err, data) {
-    if (err) throw err;
-    inquirer
-      .prompt([
-        {
-          name: "departmentSelection",
-          type: "list",
-          message: "Select a department",
-          choices: function () {
-            let choiceArray = [];
-            for (let i = 0; i < data.length; i++) {
-              choiceArray.push(data[i].department_name + " ID # " + data[i].id);
-            }
-            return choiceArray;
-          }
-        }
-      ])
-      .then(function (answer) {
+// function viewDepartmentBudgetTotal() {
+//   connection.query("SELECT * FROM department", function (err, data) {
+//     if (err) throw err;
+//     inquirer
+//       .prompt([
+//         {
+//           name: "departmentSelection",
+//           type: "list",
+//           message: "Select a department",
+//           choices: function () {
+//             let choiceArray = [];
+//             for (let i = 0; i < data.length; i++) {
+//               choiceArray.push(data[i].department_name + " ID # " + data[i].id);
+//             }
+//             return choiceArray;
+//           }
+//         }
+//       ])
+//       .then(function (answer) {
         
-        let departmentIdSelected = answer.departmentSelection.slice(answer.departmentSelection.length -1)
-        let queryText = `SELECT SUM(salary) FROM role WHERE id = ${departmentIdSelected};`;
-        connection.query(queryText, function (err, data) {
-          if (err) throw err;
-          console.table("\n Department Budget Total ".white.bgGreen, data);
-          selectAction();
-        });
-      }
-      );
-  });
-}
+//         let queryText = `SELECT SUM(salary) FROM (employee INNER JOIN role ON employee.role_id = role.id) WHERE role.id=1;
+//         `;
+//         connection.query(queryText, function (err, data) {
+//           if (err) throw err;
+//           console.table("\n Department Budget Total ".white.bgGreen, data);
+//           selectAction();
+//         });
+//       }
+//       );
+//   });
+// }
 
 
 function exitCheck() {
